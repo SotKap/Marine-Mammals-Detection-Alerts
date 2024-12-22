@@ -11,7 +11,8 @@
     <h1>Marine Mammals Detection Map</h1>
     <div id="map" style="width: 100%; height: 500px;"></div>
     <script>
-        var map = L.map('map').setView([0, 0], 2);
+        // Set the initial view to Greece
+        var map = L.map('map').setView([37.9838, 23.7275], 7); // 7 is a medium zoom level
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
         // Fetch data from alerts.json
