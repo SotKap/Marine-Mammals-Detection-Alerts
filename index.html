@@ -6,8 +6,6 @@
     <title>Marine Mammal Detection</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <!-- Add favicon link here -->
-    <link rel="icon" href="favicon.ico" />
 </head>
 <body>
     
@@ -26,6 +24,11 @@
                     marker.bindPopup(`Device: ${alert.device_id}<br>${alert.message}`);
                 });
             });
+
+        // Add a specific marker for the spot between Maleas and Kythera
+        var specificCoordinates = [36.5535, 23.0500];  // Coordinates for the spot between Maleas and Kythera
+        var specificMarker = L.marker(specificCoordinates).addTo(map);
+        specificMarker.bindPopup("Specific location between Maleas and Kythera").openPopup();
     </script>
 </body>
 </html>
