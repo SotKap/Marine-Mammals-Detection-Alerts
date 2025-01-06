@@ -40,34 +40,42 @@
         markerBounds.push([36.40217, 23.11522]);
 
         // Fetch data from alerts.json
-        fetch('https://raw.githubusercontent.com/yourusername/yourrepository/main/alerts.json')  // Update with your GitHub URL
+        fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')  // Replace with your raw URL
             .then(response => response.json())
             .then(data => {
-                data.forEach(alert => {
-                    // Dynamic marker: Update color and message based on voltage
-                    if (alert.voltage > 1.1) {
-                        dynamicMarker.setIcon(L.icon({
-                            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-red.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [0, -41]
-                        }));
-                        dynamicMarker.setPopupContent("Marine Mammals Detected!");
-                    } else {
-                        dynamicMarker.setIcon(L.icon({
-                            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [0, -41]
-                        }));
-                        dynamicMarker.setPopupContent("Waiting for data...");
-                    }
-                });
+                // Check if there is data to display
+                if (data.length > 0) {
+                    data.forEach(alert => {
+                        // Dynamic marker: Update color and message based on voltage
+                        if (alert.voltage > 1.1) {
+                            dynamicMarker.setIcon(L.icon({
+                                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-red.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [0, -41]
+                            }));
+                            dynamicMarker.setPopupContent("Marine Mammals Detected!");
+                        } else {
+                            dynamicMarker.setIcon(L.icon({
+                                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [0, -41]
+                            }));
+                            dynamicMarker.setPopupContent("Waiting for data...");
+                        }
+                    });
 
-                // Fit the map to include all the markers
-                map.fitBounds(markerBounds);
+                    // Fit the map to include all the markers
+                    map.fitBounds(markerBounds);
+                } else {
+                    dynamicMarker.setPopupContent("No alerts available.");
+                }
             })
-            .catch(error => console.error("Error loading alerts.json:", error));
+            .catch(error => {
+                console.error("Error loading alerts.json:", error);
+                dynamicMarker.setPopupContent("Error loading data.");
+            });
     </script>
 </body>
 </html>
