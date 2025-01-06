@@ -41,33 +41,49 @@
 
         // Fetch data from alerts.json
         fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(alert => {
-                    // Dynamic marker: Update color and message based on voltage
-                    if (alert.voltage > 1.1) {
-                        dynamicMarker.setIcon(L.icon({
-                            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-red.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [0, -41]
-                        }));
-                        dynamicMarker.setPopupContent("Marine Mammals Detected!");
-                    } else {
-                        dynamicMarker.setIcon(L.icon({
-                            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [0, -41]
-                        }));
-                        dynamicMarker.setPopupContent("Waiting for data...");
-                    }
-                });
-
-                // Fit the map to include all the markers
-                map.fitBounds(markerBounds);
+            .then(response => {
+                console.log('Fetch response status:', response.status);  // Log the response status
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
             })
-            .catch(error => console.error("Error loading alerts.json:", error));
+            .then(data => {
+                console.log("Data received:", data);  // Log the received data
+                if (data.length > 0) {
+                    data.forEach(alert => {
+                        // Dynamic marker: Update color and message based on voltage
+                        if (alert.voltage > 1.1) {
+                            dynamicMarker.setIcon(L.icon({
+                                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-red.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [0, -41]
+                            }));
+                            dynamicMarker.setPopupContent("Marine Mammals Detected!");
+                        } else {
+                            dynamicMarker.setIcon(L.icon({
+                                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [0, -41]
+                            }));
+                            dynamicMarker.setPopupContent("Waiting for data...");
+                        }
+                    });
+
+                    // Ensure the zoom works after all markers have been added
+                    map.fitBounds(markerBounds);
+                    console.log("Zoom applied successfully");
+                } else {
+                    dynamicMarker.setPopupContent("No alerts available.");
+                    console.log("No alerts in the data");
+                }
+            })
+            .catch(error => {
+                console.error("Error loading alerts.json:", error);
+                dynamicMarker.setPopupContent("Error loading data.");
+            });
     </script>
 </body>
 </html>
