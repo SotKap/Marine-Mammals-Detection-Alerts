@@ -3,74 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marine Mammal Detection Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <title>Marine Mammals Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.css" />
+    <style>
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
 </head>
 <body>
-    <div id="map" style="width: 100%; height: 500px;"></div>
+    <h1>Marine Mammals Detection Map</h1>
+    <div id="map"></div>
+
     <script>
         // Initialize the map
-        var map = L.map('map').setView([36.9800, 23.0700], 7);
+        const map = L.map('map').setView([36.9800, 23.0700], 10); // Default coordinates
+
+        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 10
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Custom marker icons
-        var redIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
+        // Function to fetch the latest alert
+        async function fetchLatestAlert() {
+            try {
+                const response = await fetch('/latest-alert');
+                const alert = await response.json();
 
-        var blueIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
+                if (alert && alert.location) {
+                    const { latitude, longitude } = alert.location;
 
-        // Static blue markers for Device 2, Device 3, Device 4
-        var devices = [
-            {lat: 36.3081, lon: 23.0945, name: "Device: Device_002"},
-            {lat: 36.3994, lon: 23.2542, name: "Device: Device_003"},
-            {lat: 36.2657, lon: 23.2512, name: "Device: Device_004"}
-        ];
+                    // Clear all existing markers on the map
+                    map.eachLayer(function (layer) {
+                        if (layer instanceof L.Marker) {
+                            map.removeLayer(layer);
+                        }
+                    });
 
-        devices.forEach(device => {
-            L.marker([device.lat, device.lon], { icon: blueIcon })
-                .addTo(map)
-                .bindPopup(`${device.name}`);
-        });
+                    // Add a new marker for the latest alert
+                    const marker = L.marker([latitude, longitude])
+                        .addTo(map)
+                        .bindPopup(
+                            `<b>Timestamp:</b> ${alert.timestamp}<br>` +
+                            `<b>Voltage:</b> ${alert.voltage.toFixed(2)} V<br>` +
+                            `<b>Message:</b> ${alert.message}`
+                        )
+                        .openPopup();
 
-        // Fetch data from alerts.json
-        fetch('alerts.json')
-            .then(response => response.json())
-            .then(data => {
-                var bounds = []; // To adjust the map zoom level
+                    // Center the map to the marker
+                    map.setView([latitude, longitude], 12);
+                } else {
+                    console.log("No alerts available");
+                }
+            } catch (error) {
+                console.error("Error fetching the latest alert:", error);
+            }
+        }
 
-                data.forEach(alert => {
-                    // Fixed coordinates for the first alert
-                    var latitude = 36 + (24 / 60) + (10.6 / 3600);  // 36°24'10.6"N
-                    var longitude = 23 + (5 / 60) + (41.5 / 3600);  // 23°05'41.5"E
-
-                    // Add a marker for the alert
-                    var marker = L.marker([latitude, longitude], {
-                        icon: alert.threshold_exceeded ? redIcon : undefined
-                    }).addTo(map);
-
-                    // Timestamp and alert message
-                    var timestamp = alert.timestamp || "No timestamp available";
-                    marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
-
-                    // Add to bounds for zooming
-                    bounds.push([latitude, longitude]);
-                });
-
-                // Adjust map zoom to fit all markers
-                map.fitBounds(bounds);
-            });
+        // Fetch the latest alert immediately and then every 10 seconds
+        fetchLatestAlert();
+        setInterval(fetchLatestAlert, 10000);
     </script>
 </body>
 </html>
