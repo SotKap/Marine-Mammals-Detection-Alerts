@@ -43,7 +43,7 @@
                 .addTo(map)
                 .bindPopup(`${device.name}`);
         });
-fetch('http://192.168.1.17:5000/latest-alert')
+fetch('https://192.168.1.17:5000/latest-alert')
     .then(response => response.json())
     .then(data => {
         var bounds = []; // To adjust the map zoom level
