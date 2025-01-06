@@ -39,6 +39,9 @@
         // Add the dynamic marker to the bounds as well
         markerBounds.push([36.40217, 23.11522]);
 
+        // Log markerBounds to check if it has the correct coordinates
+        console.log("markerBounds before fetching alerts:", markerBounds);
+
         // Function to fetch alerts with retry logic
         function fetchAlertsWithRetry(retries, delay) {
             return new Promise((resolve, reject) => {
@@ -96,6 +99,9 @@
                 } else {
                     dynamicMarker.setPopupContent("No alerts available.");
                 }
+
+                // Log markerBounds after fetching data
+                console.log("markerBounds after fetching alerts:", markerBounds);
 
                 // Zoom and fit the map to the markers
                 map.fitBounds(markerBounds);
