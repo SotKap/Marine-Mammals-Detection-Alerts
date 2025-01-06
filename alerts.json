@@ -35704,5 +35704,16 @@
         "device_id": "Device_001",
         "message": "Marine mammals detected",
         "threshold_exceeded": true
+    },
+    {
+        "timestamp": "2025-01-07 00:45:19",
+        "voltage": 1.23225,
+        "location": {
+            "latitude": 36.98,
+            "longitude": 23.07
+        },
+        "device_id": "Device_001",
+        "message": "Marine mammals detected",
+        "threshold_exceeded": true
     }
 ]
