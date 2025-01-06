@@ -27,6 +27,9 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
+        // Variable to store the current marker
+        let currentMarker = null;
+
         // Function to fetch the latest alert
         async function fetchLatestAlert() {
             try {
@@ -34,26 +37,24 @@
                 const alert = await response.json();
 
                 if (alert && alert.location) {
-                    const { latitude, longitude } = alert.location;
+                    const { latitude, longitude, timestamp, voltage, message } = alert;
 
-                    // Clear all existing markers on the map
-                    map.eachLayer(function (layer) {
-                        if (layer instanceof L.Marker) {
-                            map.removeLayer(layer);
-                        }
-                    });
+                    // If there's an existing marker, remove it
+                    if (currentMarker) {
+                        map.removeLayer(currentMarker);
+                    }
 
                     // Add a new marker for the latest alert
-                    const marker = L.marker([latitude, longitude])
+                    currentMarker = L.marker([latitude, longitude])
                         .addTo(map)
                         .bindPopup(
-                            `<b>Timestamp:</b> ${alert.timestamp}<br>` +
-                            `<b>Voltage:</b> ${alert.voltage.toFixed(2)} V<br>` +
-                            `<b>Message:</b> ${alert.message}`
+                            `<b>Timestamp:</b> ${timestamp}<br>` +
+                            `<b>Voltage:</b> ${voltage.toFixed(2)} V<br>` +
+                            `<b>Message:</b> ${message}`
                         )
                         .openPopup();
 
-                    // Center the map to the marker
+                    // Center the map on the marker
                     map.setView([latitude, longitude], 12);
                 } else {
                     console.log("No alerts available");
@@ -63,9 +64,11 @@
             }
         }
 
-        // Fetch the latest alert immediately and then every 10 seconds
+        // Fetch the latest alert every 5 seconds
+        setInterval(fetchLatestAlert, 5000);
+
+        // Fetch the first alert on page load
         fetchLatestAlert();
-        setInterval(fetchLatestAlert, 10000);
     </script>
 </body>
 </html>
