@@ -26,11 +26,12 @@
             .then(data => {
                 data.forEach(alert => {
                     // Check the voltage and set the marker color
-                    var markerColor = alert.volts > 1.1 ? 'red' : 'blue';
                     var marker = L.marker([alert.location.latitude, alert.location.longitude], {
-                        icon: L.divIcon({
-                            className: 'custom-icon',
-                            html: '<div style="background-color:' + markerColor + '; width: 20px; height: 20px; border-radius: 50%;"></div>'
+                        icon: L.icon({
+                            iconUrl: alert.volts > 1.1 ? 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-red.png' : 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [0, -41]
                         })
                     }).addTo(map);
 
