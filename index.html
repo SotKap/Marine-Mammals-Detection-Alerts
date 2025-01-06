@@ -16,10 +16,6 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Add a test marker
-        var testMarker = L.marker([36.9800, 23.0700]).addTo(map);
-        testMarker.bindPopup("Test Marker").openPopup();
-
         // Fetch data from alerts.json
         fetch('alerts.json')
             .then(response => response.json())
