@@ -27,23 +27,6 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Add static markers (example locations)
-        const staticMarkers = [
-            { lat: 36.9800, lon: 23.0700, title: "Static Marker 1", message: "Static marker location 1" },
-            { lat: 37.0000, lon: 23.1000, title: "Static Marker 2", message: "Static marker location 2" },
-            { lat: 36.9600, lon: 23.0600, title: "Static Marker 3", message: "Static marker location 3" },
-        ];
-
-        // Add static markers to the map
-        staticMarkers.forEach(marker => {
-            L.marker([marker.lat, marker.lon])
-                .addTo(map)
-                .bindPopup(
-                    `<b>Title:</b> ${marker.title}<br>` +
-                    `<b>Message:</b> ${marker.message}`
-                );
-        });
-
         // Variable to store the current marker
         let currentMarker = null;
 
