@@ -25,8 +25,18 @@
             .then(response => response.json())
             .then(data => {
                 data.forEach(alert => {
-                    var marker = L.marker([alert.location.latitude, alert.location.longitude]).addTo(map);
-                    marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}`);
+                    // Check the voltage and set the marker color
+                    var markerColor = alert.volts > 1.1 ? 'red' : 'blue';
+                    var marker = L.marker([alert.location.latitude, alert.location.longitude], {
+                        icon: L.divIcon({
+                            className: 'custom-icon',
+                            html: '<div style="background-color:' + markerColor + '; width: 20px; height: 20px; border-radius: 50%;"></div>'
+                        })
+                    }).addTo(map);
+
+                    // Bind popup message based on voltage
+                    var popupMessage = alert.volts > 1.1 ? "Marine Mammals Detected!" : `Device: ${alert.device_id}<br>Message: ${alert.message}`;
+                    marker.bindPopup(popupMessage);
                 });
             })
             .catch(error => console.error("Error loading alerts.json:", error));
