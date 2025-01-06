@@ -40,10 +40,16 @@
         markerBounds.push([36.40217, 23.11522]);
 
         // Fetch data from alerts.json
-        fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')  // Replace with your raw URL
-            .then(response => response.json())
+        fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')
+            .then(response => {
+                console.log('Fetch response status:', response.status);  // Log the response status
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
-                console.log("Data received:", data); // Log the received data to ensure it's valid
+                console.log("Data received:", data);  // Log the received data
                 if (data.length > 0) {
                     data.forEach(alert => {
                         // Dynamic marker: Update color and message based on voltage
