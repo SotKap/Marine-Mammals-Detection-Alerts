@@ -16,25 +16,20 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Custom red marker icon
-        var redIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
+        // Add a test marker
+        var testMarker = L.marker([36.9800, 23.0700]).addTo(map);
+        testMarker.bindPopup("Test Marker").openPopup();
 
         // Fetch data from alerts.json
         fetch('alerts.json')
             .then(response => response.json())
             .then(data => {
                 data.forEach(alert => {
-                    var marker = L.marker([alert.location.latitude, alert.location.longitude], {
-                        icon: alert.threshold_exceeded ? redIcon : undefined
-                    }).addTo(map);
+                    var marker = L.marker([alert.location.latitude, alert.location.longitude]).addTo(map);
                     marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}`);
                 });
-            });
+            })
+            .catch(error => console.error("Error loading alerts.json:", error));
     </script>
 </body>
 </html>
