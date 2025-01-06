@@ -23,7 +23,11 @@
             {lat: 36.4135, lng: 23.3652, popup: "Static Marker 3"}
         ];
 
-        // Add static markers to map
+        // Dynamic marker coordinates
+        var dynamicMarker = L.marker([36.40217, 23.11522]).addTo(map);
+        dynamicMarker.bindPopup("Waiting for data...");
+
+        // Add static markers to map and update markerBounds
         var markerBounds = [];
         staticMarkers.forEach(function(markerData) {
             var marker = L.marker([markerData.lat, markerData.lng])
@@ -32,14 +36,10 @@
             markerBounds.push([markerData.lat, markerData.lng]);
         });
 
-        // Coordinates for dynamic marker
-        var dynamicMarker = L.marker([36.40217, 23.11522]).addTo(map);
-        dynamicMarker.bindPopup("Waiting for data...");
-
-        // Add dynamic marker to bounds for zoom fitting
+        // Add the dynamic marker to the bounds as well
         markerBounds.push([36.40217, 23.11522]);
 
-        // Function to fetch data with retry mechanism
+        // Function to fetch alerts with retry logic
         function fetchAlertsWithRetry(retries, delay) {
             return new Promise((resolve, reject) => {
                 function tryFetch(attempt) {
@@ -74,7 +74,7 @@
             .then(data => {
                 if (data.length > 0) {
                     data.forEach(alert => {
-                        // Dynamic marker: Update color and message based on voltage
+                        // Update dynamic marker based on alert data
                         if (alert.voltage > 1.1) {
                             dynamicMarker.setIcon(L.icon({
                                 iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-red.png',
@@ -93,12 +93,12 @@
                             dynamicMarker.setPopupContent("Waiting for data...");
                         }
                     });
-
-                    // Fit the map to include all the markers
-                    map.fitBounds(markerBounds);
                 } else {
                     dynamicMarker.setPopupContent("No alerts available.");
                 }
+
+                // Zoom and fit the map to the markers
+                map.fitBounds(markerBounds);
             })
             .catch(error => {
                 console.error("Error loading alerts:", error);
