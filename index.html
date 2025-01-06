@@ -31,7 +31,7 @@
             popupAnchor: [1, -34],
         });
 
-        // Static blue markers
+        // Static blue markers for Device 2, Device 3, Device 4
         var devices = [
             {lat: 36.3081, lon: 23.0945, name: "Device 2"},
             {lat: 36.3994, lon: 23.2542, name: "Device 3"},
@@ -48,6 +48,8 @@
         fetch('alerts.json')
             .then(response => response.json())
             .then(data => {
+                var bounds = []; // To adjust the map zoom level
+
                 data.forEach(alert => {
                     // Fixed coordinates for the first alert
                     var latitude = 36 + (24 / 60) + (10.6 / 3600);  // 36°24'10.6"N
@@ -61,7 +63,13 @@
                     // Timestamp and alert message
                     var timestamp = alert.timestamp || "No timestamp available";
                     marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+
+                    // Add to bounds for zooming
+                    bounds.push([latitude, longitude]);
                 });
+
+                // Adjust map zoom to fit all markers
+                map.fitBounds(bounds);
             });
     </script>
 </body>
