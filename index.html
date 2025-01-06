@@ -16,22 +16,28 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Static markers
+        // Static markers coordinates
         var staticMarkers = [
             {lat: 36.28725, lng: 23.1075, popup: "Static Marker 1"},
             {lat: 36.26544, lng: 23.29294, popup: "Static Marker 2"},
             {lat: 36.4135, lng: 23.3652, popup: "Static Marker 3"}
         ];
 
+        // Add static markers to map
+        var markerBounds = [];
         staticMarkers.forEach(function(markerData) {
-            L.marker([markerData.lat, markerData.lng])
+            var marker = L.marker([markerData.lat, markerData.lng])
                 .addTo(map)
                 .bindPopup(markerData.popup);
+            markerBounds.push([markerData.lat, markerData.lng]);
         });
 
         // Coordinates for dynamic marker
         var dynamicMarker = L.marker([36.40217, 23.11522]).addTo(map);
         dynamicMarker.bindPopup("Waiting for data...");
+
+        // Add dynamic marker to bounds for zoom fitting
+        markerBounds.push([36.40217, 23.11522]);
 
         // Fetch data from alerts.json
         fetch('alerts.json')
@@ -57,6 +63,9 @@
                         dynamicMarker.setPopupContent("Waiting for data...");
                     }
                 });
+
+                // Fit the map to include all the markers
+                map.fitBounds(markerBounds);
             })
             .catch(error => console.error("Error loading alerts.json:", error));
     </script>
