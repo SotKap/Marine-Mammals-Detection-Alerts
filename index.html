@@ -8,12 +8,15 @@
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
-    
     <div id="map" style="width: 100%; height: 500px;"></div>
     <script>
         // Set the initial view to Greece
-        var map = L.map('map').setView([37.9838, 23.7275], 7); // 7 is a medium zoom level
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        var map = L.map('map').setView([37.9838, 23.7275], 7); // Centered on Greece
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
 
         // Define custom icons
         var defaultIcon = L.icon({
@@ -32,17 +35,37 @@
 
         // Fetch data from alerts.json
         fetch('alerts.json')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log("Fetched alerts data:", data);
+
                 data.forEach(alert => {
-                    // Determine if the voltage exceeds the threshold
+                    // Validate alert location and voltage
+                    if (!alert.location || !alert.location.latitude || !alert.location.longitude) {
+                        console.warn("Invalid location data:", alert);
+                        return;
+                    }
+
+                    // Determine the marker icon and popup message
                     var icon = alert.voltage > 1.1 ? alertIcon : defaultIcon;
                     var message = alert.voltage > 1.1 ? "Marine Mammals Detected" : "Normal Voltage";
 
                     // Add a marker to the map
                     var marker = L.marker([alert.location.latitude, alert.location.longitude], { icon: icon }).addTo(map);
-                    marker.bindPopup(`Message: ${message}<br>Voltage: ${alert.voltage.toFixed(2)} V<br>Timestamp: ${alert.timestamp}`);
+                    marker.bindPopup(`
+                        <b>${message}</b><br>
+                        Voltage: ${alert.voltage.toFixed(2)} V<br>
+                        Timestamp: ${alert.timestamp}
+                    `);
                 });
+            })
+            .catch(error => {
+                console.error("Error fetching or processing alerts.json:", error);
             });
     </script>
 </body>
