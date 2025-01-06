@@ -39,8 +39,8 @@
         // Add dynamic marker to bounds for zoom fitting
         markerBounds.push([36.40217, 23.11522]);
 
-        // Fetch data from alerts.json
-        fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')
+        // Fetch data from the Flask server
+        fetch('/alerts.json')
             .then(response => {
                 console.log('Fetch response status:', response.status);  // Log the response status
                 if (!response.ok) {
