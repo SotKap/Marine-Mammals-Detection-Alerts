@@ -43,7 +43,7 @@
         fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')  // Replace with your raw URL
             .then(response => response.json())
             .then(data => {
-                // Check if there is data to display
+                console.log("Data received:", data); // Log the received data to ensure it's valid
                 if (data.length > 0) {
                     data.forEach(alert => {
                         // Dynamic marker: Update color and message based on voltage
