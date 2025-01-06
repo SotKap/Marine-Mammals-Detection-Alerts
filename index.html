@@ -3,34 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marine Mammal Detection</title>
+    <title>Marine Mammal Detection Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
-    <h1>Marine Mammal Detection Map</h1>
-    <div id="map" style="width: 100%; height: 500px; border: 1px solid black;"></div>
-    <div id="error" style="color: red; font-weight: bold; margin-top: 20px;"></div>
-
+    <div id="map" style="width: 100%; height: 500px;"></div>
     <script>
-        // Set the initial view to Greece
-        var map = L.map('map').setView([37.9838, 23.7275], 7); // Centered on Greece
-
-        // Add OpenStreetMap tiles
+        // Initialize the map
+        var map = L.map('map').setView([36.9800, 23.0700], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19
         }).addTo(map);
 
-        // Define custom icons
-        var defaultIcon = L.icon({
-            iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
-
-        var alertIcon = L.icon({
-            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-red.png',
+        // Custom red marker icon
+        var redIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
@@ -38,43 +26,14 @@
 
         // Fetch data from alerts.json
         fetch('alerts.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log("Fetched alerts data:", data);
-
-                // Ensure data is an array
-                if (!Array.isArray(data)) {
-                    throw new Error("Data is not an array");
-                }
-
                 data.forEach(alert => {
-                    // Validate alert data
-                    if (!alert.location || alert.location.latitude === undefined || alert.location.longitude === undefined) {
-                        console.warn("Invalid location data:", alert);
-                        return;
-                    }
-
-                    // Determine the marker icon and popup message
-                    var icon = alert.voltage > 1.1 ? alertIcon : defaultIcon;
-                    var message = alert.voltage > 1.1 ? "Marine Mammals Detected" : "Normal Voltage";
-
-                    // Add a marker to the map
-                    var marker = L.marker([alert.location.latitude, alert.location.longitude], { icon: icon }).addTo(map);
-                    marker.bindPopup(`
-                        <b>${message}</b><br>
-                        Voltage: ${alert.voltage.toFixed(2)} V<br>
-                        Timestamp: ${alert.timestamp}
-                    `);
+                    var marker = L.marker([alert.location.latitude, alert.location.longitude], {
+                        icon: alert.threshold_exceeded ? redIcon : undefined
+                    }).addTo(map);
+                    marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}`);
                 });
-            })
-            .catch(error => {
-                console.error("Error fetching or processing alerts.json:", error);
-                document.getElementById("error").innerText = `Error: ${error.message}`;
             });
     </script>
 </body>
