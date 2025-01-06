@@ -43,35 +43,34 @@
                 .addTo(map)
                 .bindPopup(`${device.name}`);
         });
-
-fetch('/latest-alert')
-    .then(response => {
-        console.log('Response status:', response.status);  // Log the status code
-        return response.text();  // Get raw response text
-    })
+fetch('http://192.168.1.17:5000/latest-alert')
+    .then(response => response.json())
     .then(data => {
-        console.log('Raw response:', data);  // Log the raw response
-        try {
-            const alert = JSON.parse(data);  // Try to parse the response
-            var bounds = [];
-            var latitude = alert.location.latitude;
-            var longitude = alert.location.longitude;
+        var bounds = []; // To adjust the map zoom level
 
-            var marker = L.marker([latitude, longitude], {
-                icon: alert.threshold_exceeded ? redIcon : undefined
-            }).addTo(map);
+        // Only one alert data
+        var alert = data;
 
-            var timestamp = alert.timestamp || "No timestamp available";
-            marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
-            bounds.push([latitude, longitude]);
-            map.fitBounds(bounds);
-        } catch (error) {
-            console.error('Error parsing JSON:', error);
-            console.log('Raw data:', data);  // Log raw data if parsing fails
-        }
+        var latitude = alert.location.latitude;
+        var longitude = alert.location.longitude;
+
+        // Add a marker for the alert
+        var marker = L.marker([latitude, longitude], {
+            icon: alert.threshold_exceeded ? redIcon : undefined
+        }).addTo(map);
+
+        // Timestamp and alert message
+        var timestamp = alert.timestamp || "No timestamp available";
+        marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+
+        // Add to bounds for zooming
+        bounds.push([latitude, longitude]);
+
+        // Adjust map zoom to fit all markers
+        map.fitBounds(bounds);
     })
     .catch(error => {
-        console.error('Error fetching alert data:', error);
+        console.error("Error fetching alert data:", error);
     });
     </script>
 </body>
