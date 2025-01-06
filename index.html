@@ -27,6 +27,23 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
+        // Add static markers (example locations)
+        const staticMarkers = [
+            { lat: 36.9800, lon: 23.0700, title: "Static Marker 1", message: "Static marker location 1" },
+            { lat: 37.0000, lon: 23.1000, title: "Static Marker 2", message: "Static marker location 2" },
+            { lat: 36.9600, lon: 23.0600, title: "Static Marker 3", message: "Static marker location 3" },
+        ];
+
+        // Add static markers to the map
+        staticMarkers.forEach(marker => {
+            L.marker([marker.lat, marker.lon])
+                .addTo(map)
+                .bindPopup(
+                    `<b>Title:</b> ${marker.title}<br>` +
+                    `<b>Message:</b> ${marker.message}`
+                );
+        });
+
         // Variable to store the current marker
         let currentMarker = null;
 
@@ -39,20 +56,25 @@
                 if (alert && alert.location) {
                     const { latitude, longitude, timestamp, voltage, message } = alert;
 
-                    // If there's an existing marker, remove it
-                    if (currentMarker) {
-                        map.removeLayer(currentMarker);
+                    // If there's no existing marker, create one
+                    if (!currentMarker) {
+                        currentMarker = L.marker([latitude, longitude])
+                            .addTo(map)
+                            .bindPopup(
+                                `<b>Timestamp:</b> ${timestamp}<br>` +
+                                `<b>Voltage:</b> ${voltage.toFixed(2)} V<br>` +
+                                `<b>Message:</b> ${message}`
+                            )
+                            .openPopup();
+                    } else {
+                        // If there's an existing marker, update its position and popup content
+                        currentMarker.setLatLng([latitude, longitude])
+                            .setPopupContent(
+                                `<b>Timestamp:</b> ${timestamp}<br>` +
+                                `<b>Voltage:</b> ${voltage.toFixed(2)} V<br>` +
+                                `<b>Message:</b> ${message}`
+                            );
                     }
-
-                    // Add a new marker for the latest alert
-                    currentMarker = L.marker([latitude, longitude])
-                        .addTo(map)
-                        .bindPopup(
-                            `<b>Timestamp:</b> ${timestamp}<br>` +
-                            `<b>Voltage:</b> ${voltage.toFixed(2)} V<br>` +
-                            `<b>Message:</b> ${message}`
-                        )
-                        .openPopup();
 
                     // Center the map on the marker
                     map.setView([latitude, longitude], 12);
