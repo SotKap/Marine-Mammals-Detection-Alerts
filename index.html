@@ -43,7 +43,7 @@
                 .addTo(map)
                 .bindPopup(`${device.name}`);
         });
-fetch('https://192.168.1.17:5000/latest-alert')
+fetch('https://0875-2a02-587-9805-6500-6f6-616e-2b92-19f7.ngrok-free.app/latest-alert')
     .then(response => response.json())
     .then(data => {
         var bounds = []; // To adjust the map zoom level
