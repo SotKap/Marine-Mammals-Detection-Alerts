@@ -44,32 +44,36 @@
                 .bindPopup(`${device.name}`);
         });
 
-        // Fetch data from alerts.json
-        fetch('alerts.json')
+        // Fetch the latest alert data
+        fetch('/latest-alert')
             .then(response => response.json())
             .then(data => {
                 var bounds = []; // To adjust the map zoom level
 
-                data.forEach(alert => {
-                    // Fixed coordinates for the first alert
-                    var latitude = 36 + (24 / 60) + (10.6 / 3600);  // 36°24'10.6"N
-                    var longitude = 23 + (5 / 60) + (41.5 / 3600);  // 23°05'41.5"E
+                // Only one alert data
+                var alert = data;
 
-                    // Add a marker for the alert
-                    var marker = L.marker([latitude, longitude], {
-                        icon: alert.threshold_exceeded ? redIcon : undefined
-                    }).addTo(map);
+                // Extract latitude and longitude from the alert
+                var latitude = alert.location.latitude;
+                var longitude = alert.location.longitude;
 
-                    // Timestamp and alert message
-                    var timestamp = alert.timestamp || "No timestamp available";
-                    marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+                // Add a marker for the alert with red icon if threshold exceeded
+                var marker = L.marker([latitude, longitude], {
+                    icon: alert.threshold_exceeded ? redIcon : undefined
+                }).addTo(map);
 
-                    // Add to bounds for zooming
-                    bounds.push([latitude, longitude]);
-                });
+                // Timestamp and alert message
+                var timestamp = alert.timestamp || "No timestamp available";
+                marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+
+                // Add to bounds for zooming
+                bounds.push([latitude, longitude]);
 
                 // Adjust map zoom to fit all markers
                 map.fitBounds(bounds);
+            })
+            .catch(error => {
+                console.error('Error fetching alert data:', error);
             });
     </script>
 </body>
