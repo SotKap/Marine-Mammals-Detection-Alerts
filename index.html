@@ -23,7 +23,7 @@
             {lat: 36.4135, lng: 23.3652, popup: "Static Marker 3"}
         ];
 
-        // Add static markers to map and update markerBounds
+        // Add static markers to map and create bounds for zooming
         var markerBounds = [];
         staticMarkers.forEach(function(markerData) {
             var marker = L.marker([markerData.lat, markerData.lng])
@@ -54,15 +54,13 @@
                     data.forEach(alert => {
                         // Dynamic marker: Update color and message based on voltage
                         if (alert.voltage > 1.1) {
-                            var alertMarker = L.marker([alert.location.latitude, alert.location.longitude]).addTo(map);
-                            alertMarker.setIcon(L.icon({
+                            dynamicMarker.setIcon(L.icon({
                                 iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-red.png',
                                 iconSize: [25, 41],
                                 iconAnchor: [12, 41],
                                 popupAnchor: [0, -41]
                             }));
-                            alertMarker.bindPopup(alert.message);
-                            markerBounds.push([alert.location.latitude, alert.location.longitude]); // Add to bounds for zooming
+                            dynamicMarker.setPopupContent("Marine Mammals Detected!");
                         } else {
                             dynamicMarker.setIcon(L.icon({
                                 iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon.png',
@@ -73,14 +71,12 @@
                             dynamicMarker.setPopupContent("Waiting for data...");
                         }
                     });
-
-                    // Fit the map to include all the markers
-                    map.fitBounds(markerBounds);
-                    console.log("Zoom applied successfully");
                 } else {
                     dynamicMarker.setPopupContent("No alerts available.");
-                    console.log("No alerts in the data");
                 }
+
+                // Fit the map to include all the markers
+                map.fitBounds(markerBounds);
             })
             .catch(error => {
                 console.error("Error loading alerts.json:", error);
