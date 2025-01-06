@@ -39,17 +39,39 @@
         // Add dynamic marker to bounds for zoom fitting
         markerBounds.push([36.40217, 23.11522]);
 
-        // Fetch data from alerts.json
-        fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')
-            .then(response => {
-                console.log('Fetch response status:', response.status);  // Log the response status
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+        // Function to fetch data with retry mechanism
+        function fetchAlertsWithRetry(retries, delay) {
+            return new Promise((resolve, reject) => {
+                function tryFetch(attempt) {
+                    fetch('https://raw.githubusercontent.com/SotKap/Marine-Mammals-Detection/main/alerts.json')
+                        .then(response => {
+                            console.log('Fetch response status:', response.status);  // Log the response status
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log("Data received:", data);  // Log the received data
+                            resolve(data);
+                        })
+                        .catch(error => {
+                            console.error("Error loading alerts.json:", error);
+                            if (attempt < retries) {
+                                console.log(`Retrying... (${attempt + 1}/${retries})`);
+                                setTimeout(() => tryFetch(attempt + 1), delay);
+                            } else {
+                                reject("Failed to fetch alerts after several attempts.");
+                            }
+                        });
                 }
-                return response.json();
-            })
+                tryFetch(0);
+            });
+        }
+
+        // Fetch the alerts with retry logic
+        fetchAlertsWithRetry(5, 2000)  // Retry 5 times with a 2-second delay
             .then(data => {
-                console.log("Data received:", data);  // Log the received data
                 if (data.length > 0) {
                     data.forEach(alert => {
                         // Dynamic marker: Update color and message based on voltage
@@ -79,7 +101,7 @@
                 }
             })
             .catch(error => {
-                console.error("Error loading alerts.json:", error);
+                console.error("Error loading alerts:", error);
                 dynamicMarker.setPopupContent("Error loading data.");
             });
     </script>
