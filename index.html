@@ -44,32 +44,31 @@
                 .bindPopup(`${device.name}`);
         });
 
-      fetch('/latest-alert')
-    .then(response => response.json())  // Make sure we're parsing the JSON response
+fetch('/latest-alert')
+    .then(response => {
+        console.log('Response status:', response.status);  // Log the status code
+        return response.text();  // Get raw response text
+    })
     .then(data => {
-        var bounds = []; // To adjust the map zoom level
+        console.log('Raw response:', data);  // Log the raw response
+        try {
+            const alert = JSON.parse(data);  // Try to parse the response
+            var bounds = [];
+            var latitude = alert.location.latitude;
+            var longitude = alert.location.longitude;
 
-        // Only one alert data (latest alert)
-        var alert = data;
+            var marker = L.marker([latitude, longitude], {
+                icon: alert.threshold_exceeded ? redIcon : undefined
+            }).addTo(map);
 
-        // Get latitude and longitude from the alert
-        var latitude = alert.location.latitude;
-        var longitude = alert.location.longitude;
-
-        // Add a marker for the alert
-        var marker = L.marker([latitude, longitude], {
-            icon: alert.threshold_exceeded ? redIcon : undefined
-        }).addTo(map);
-
-        // Get timestamp and message
-        var timestamp = alert.timestamp || "No timestamp available";
-        marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
-
-        // Add the marker's location to bounds for zooming
-        bounds.push([latitude, longitude]);
-
-        // Adjust map zoom level based on bounds
-        map.fitBounds(bounds);
+            var timestamp = alert.timestamp || "No timestamp available";
+            marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+            bounds.push([latitude, longitude]);
+            map.fitBounds(bounds);
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            console.log('Raw data:', data);  // Log raw data if parsing fails
+        }
     })
     .catch(error => {
         console.error('Error fetching alert data:', error);
