@@ -6,27 +6,48 @@
     <title>Marine Mammal Detection Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js"></script>
+
+    <!-- Import Firebase as a module -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBtJNoct4AbXBqFABf0ExOvEhTSXLxOOY",
+            authDomain: "marine-mammals-detection.firebaseapp.com",
+            databaseURL: "https://marine-mammals-detection-default-rtdb.firebaseio.com",
+            projectId: "marine-mammals-detection",
+            storageBucket: "marine-mammals-detection.firebasestorage.app",
+            messagingSenderId: "481079667993",
+            appId: "1:481079667993:web:7603ba794b413579466988"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        function fetchData() {
+            const alertsRef = ref(database, 'alerts');
+            get(alertsRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    // Process data
+                    console.log(data);
+                } else {
+                    console.log("No data available");
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
+
+        // Call the function to fetch data
+        fetchData();
+    </script>
 </head>
 <body>
     <div id="map" style="width: 100%; height: 500px;"></div>
-    <script>
-        // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBBtJNoct4AbXBqFABf0ExOvEhTSXLxOOY",
-    authDomain: "marine-mammals-detection.firebaseapp.com",
-    databaseURL: "https://marine-mammals-detection-default-rtdb.firebaseio.com",
-    projectId: "marine-mammals-detection",
-    storageBucket: "marine-mammals-detection.firebasestorage.app",
-    messagingSenderId: "481079667993",
-    appId: "1:481079667993:web:7603ba794b413579466988",
-    measurementId: "G-76LRTVETDC"
-  };
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
 
+    <script>
         // Initialize the map
         var map = L.map('map').setView([36.9800, 23.0700], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -61,38 +82,34 @@
                 .bindPopup(`${device.name}`);
         });
 
-        // Fetch the latest alert from Firebase
-        const latestAlertRef = firebase.database().ref('latest_alert');
-        latestAlertRef.once('value')
-            .then(snapshot => {
-                const alert = snapshot.val();
+        fetch('https://2582-2a02-587-9805-6500-6f6-616e-2b92-19f7.ngrok-free.app/latest-alert')
+            .then(response => response.json())
+            .then(data => {
+                var bounds = []; // To adjust the map zoom level
 
-                if (alert) {
-                    var bounds = []; // To adjust the map zoom level
+                // Only one alert data
+                var alert = data;
 
-                    var latitude = alert.location.latitude;
-                    var longitude = alert.location.longitude;
+                var latitude = alert.location.latitude;
+                var longitude = alert.location.longitude;
 
-                    // Add a marker for the alert
-                    var marker = L.marker([latitude, longitude], {
-                        icon: alert.threshold_exceeded ? redIcon : undefined
-                    }).addTo(map);
+                // Add a marker for the alert
+                var marker = L.marker([latitude, longitude], {
+                    icon: alert.threshold_exceeded ? redIcon : undefined
+                }).addTo(map);
 
-                    // Timestamp and alert message
-                    var timestamp = alert.timestamp || "No timestamp available";
-                    marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+                // Timestamp and alert message
+                var timestamp = alert.timestamp || "No timestamp available";
+                marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
 
-                    // Add to bounds for zooming
-                    bounds.push([latitude, longitude]);
+                // Add to bounds for zooming
+                bounds.push([latitude, longitude]);
 
-                    // Adjust map zoom to fit all markers
-                    map.fitBounds(bounds);
-                } else {
-                    console.log("No alert data available.");
-                }
+                // Adjust map zoom to fit all markers
+                map.fitBounds(bounds);
             })
             .catch(error => {
-                console.error("Error fetching alert data from Firebase:", error);
+                console.error("Error fetching alert data:", error);
             });
     </script>
 </body>
