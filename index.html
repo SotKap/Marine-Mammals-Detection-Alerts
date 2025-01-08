@@ -6,16 +6,15 @@
     <title>Marine Mammal Detection Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-
-    <!-- Firebase SDK v8 (non-modular) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Firebase SDK 8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
     <div id="map" style="width: 100%; height: 500px;"></div>
     <script>
-        // Your Firebase config
-        const firebaseConfig = {
+        // Firebase configuration
+        var firebaseConfig = {
             apiKey: "AIzaSyBBtJNoct4AbXBqFABf0ExOvEhTSXLxOOY",
             authDomain: "marine-mammals-detection.firebaseapp.com",
             databaseURL: "https://marine-mammals-detection-default-rtdb.firebaseio.com",
@@ -24,12 +23,10 @@
             messagingSenderId: "481079667993",
             appId: "1:481079667993:web:7603ba794b413579466988"
         };
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
         // Initialize the map
-        var map = L.map('map').setView([36.9800, 23.0700], 7);
+        var map = L.map('map').setView([36.4221, 23.0054], 10); // Adjusted zoom and center
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19
         }).addTo(map);
@@ -57,43 +54,39 @@
         ];
 
         devices.forEach(device => {
+            var timestamp = new Date().toISOString(); // Placeholder timestamp
+            var popupContent = `Device: ${device.name}<br>Message: Static location<br>Timestamp: ${timestamp}`;
             L.marker([device.lat, device.lon], { icon: blueIcon })
                 .addTo(map)
-                .bindPopup(`${device.name}`);
+                .bindPopup(popupContent);
         });
 
-        // Fetch alerts from Firebase Realtime Database
-        var database = firebase.database();
-        var alertsRef = database.ref('/alerts');
+        // Firebase listener for the latest alert
+        var latestAlertRef = firebase.database().ref("latest-alert");
+        latestAlertRef.on("value", function(snapshot) {
+            var alert = snapshot.val();
+            if (alert) {
+                var latitude = alert.location.latitude || 36.4219; // Red pin coordinates
+                var longitude = alert.location.longitude || 23.0061;
 
-        alertsRef.on('value', function(snapshot) {
-            const alerts = snapshot.val();
-            var bounds = [];
+                // Add a marker for the red pin
+                var marker = L.marker([latitude, longitude], {
+                    icon: redIcon
+                }).addTo(map);
 
-            // Check if alerts exist and loop through them
-            if (alerts) {
-                Object.values(alerts).forEach(alert => {
-                    const latitude = alert.location.latitude;
-                    const longitude = alert.location.longitude;
+                // Create a popup with timestamp and device info
+                var popupContent = `
+                    Device: ${alert.device_id}<br>
+                    Message: ${alert.message}<br>
+                    Timestamp: ${alert.timestamp || "No timestamp available"}
+                `;
+                marker.bindPopup(popupContent).openPopup();
 
-                    // Add a red pin for alerts with threshold exceeded
-                    var marker = L.marker([latitude, longitude], {
-                        icon: alert.threshold_exceeded ? redIcon : undefined
-                    }).addTo(map);
-
-                    // Add the timestamp and alert message to the marker's popup
-                    var timestamp = alert.timestamp || "No timestamp available";
-                    marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
-
-                    // Add to bounds for zooming
-                    bounds.push([latitude, longitude]);
-                });
-
-                // Adjust map zoom to fit all markers
-                map.fitBounds(bounds);
-            } else {
-                console.log("No alerts available.");
+                // Adjust map view to include the red pin
+                map.setView([latitude, longitude], 10);
             }
+        }, function(error) {
+            console.error("Error fetching alert data from Firebase:", error);
         });
     </script>
 </body>
