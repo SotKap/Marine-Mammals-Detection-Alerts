@@ -66,8 +66,8 @@
         latestAlertRef.on("value", function(snapshot) {
             var alert = snapshot.val();
             if (alert) {
-                var latitude = alert.location.latitude || 36.4219; // Red pin coordinates
-                var longitude = alert.location.longitude || 23.0061;
+                var latitude = alert.location.latitude || 36.2519; // Red pin coordinates
+                var longitude = alert.location.longitude || 23.0021;
 
                 // Add a marker for the red pin
                 var marker = L.marker([latitude, longitude], {
