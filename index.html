@@ -1,84 +1,100 @@
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-<script>
-  // Your Firebase config
-  const firebaseConfig = {
-     apiKey: "AIzaSyBBtJNoct4AbXBqFABf0ExOvEhTSXLxOOY",
-     authDomain: "marine-mammals-detection.firebaseapp.com",
-     databaseURL: "https://marine-mammals-detection-default-rtdb.firebaseio.com",
-     projectId: "marine-mammals-detection",
-     storageBucket: "marine-mammals-detection.firebasestorage.app",
-     messagingSenderId: "481079667993",
-     appId: "1:481079667993:web:7603ba794b413579466988"
-  };
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marine Mammal Detection Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const database = firebase.database(app);
+    <!-- Firebase SDK v8 (non-modular) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+    <div id="map" style="width: 100%; height: 500px;"></div>
+    <script>
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-  // Initialize the map
-  var map = L.map('map').setView([36.9800, 23.0700], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
-  }).addTo(map);
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
 
-  // Custom marker icons
-  var redIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-  });
-
-  var blueIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-  });
-
-  // Static blue markers for Device 2, Device 3, Device 4
-  var devices = [
-    {lat: 36.3081, lon: 23.0945, name: "Device 2"},
-    {lat: 36.3994, lon: 23.2542, name: "Device 3"},
-    {lat: 36.2657, lon: 23.2512, name: "Device 4"}
-  ];
-
-  devices.forEach(device => {
-    L.marker([device.lat, device.lon], { icon: blueIcon })
-        .addTo(map)
-        .bindPopup(`${device.name}`);
-  });
-
-  // Fetch alerts from Firebase Realtime Database
-  const alertsRef = database.ref('/alerts');
-  alertsRef.on('value', (snapshot) => {
-    const alerts = snapshot.val();
-    var bounds = [];
-
-    // Check if alerts exist and loop through them
-    if (alerts) {
-      Object.values(alerts).forEach(alert => {
-        const latitude = alert.location.latitude;
-        const longitude = alert.location.longitude;
-
-        // Add a red pin for alerts with threshold exceeded
-        var marker = L.marker([latitude, longitude], {
-          icon: alert.threshold_exceeded ? redIcon : undefined
+        // Initialize the map
+        var map = L.map('map').setView([36.9800, 23.0700], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
         }).addTo(map);
 
-        // Add the timestamp and alert message to the marker's popup
-        var timestamp = alert.timestamp || "No timestamp available";
-        marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+        // Custom marker icons
+        var redIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+        });
 
-        // Add to bounds for zooming
-        bounds.push([latitude, longitude]);
-      });
+        var blueIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+        });
 
-      // Adjust map zoom to fit all markers
-      map.fitBounds(bounds);
-    } else {
-      console.log("No alerts available.");
-    }
-  });
-</script>
+        // Static blue markers for Device 2, Device 3, Device 4
+        var devices = [
+            {lat: 36.3081, lon: 23.0945, name: "Device 2"},
+            {lat: 36.3994, lon: 23.2542, name: "Device 3"},
+            {lat: 36.2657, lon: 23.2512, name: "Device 4"}
+        ];
+
+        devices.forEach(device => {
+            L.marker([device.lat, device.lon], { icon: blueIcon })
+                .addTo(map)
+                .bindPopup(`${device.name}`);
+        });
+
+        // Fetch alerts from Firebase Realtime Database
+        var database = firebase.database();
+        var alertsRef = database.ref('/alerts');
+
+        alertsRef.on('value', function(snapshot) {
+            const alerts = snapshot.val();
+            var bounds = [];
+
+            // Check if alerts exist and loop through them
+            if (alerts) {
+                Object.values(alerts).forEach(alert => {
+                    const latitude = alert.location.latitude;
+                    const longitude = alert.location.longitude;
+
+                    // Add a red pin for alerts with threshold exceeded
+                    var marker = L.marker([latitude, longitude], {
+                        icon: alert.threshold_exceeded ? redIcon : undefined
+                    }).addTo(map);
+
+                    // Add the timestamp and alert message to the marker's popup
+                    var timestamp = alert.timestamp || "No timestamp available";
+                    marker.bindPopup(`Device: ${alert.device_id}<br>Message: ${alert.message}<br>Timestamp: ${timestamp}`);
+
+                    // Add to bounds for zooming
+                    bounds.push([latitude, longitude]);
+                });
+
+                // Adjust map zoom to fit all markers
+                map.fitBounds(bounds);
+            } else {
+                console.log("No alerts available.");
+            }
+        });
+    </script>
+</body>
+</html>
