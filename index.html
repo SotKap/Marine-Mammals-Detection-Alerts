@@ -26,7 +26,7 @@
         firebase.initializeApp(firebaseConfig);
 
         // Initialize the map
-        var map = L.map('map').setView([36.2519, 23.0021], 10); // Adjusted zoom and center
+        var map = L.map('map').setView([36.2517, 22.5923], 10); // Adjusted zoom and center
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19
         }).addTo(map);
@@ -66,8 +66,8 @@
         latestAlertRef.on("value", function(snapshot) {
             var alert = snapshot.val();
             if (alert) {
-                var latitude = alert.location.latitude || 36.2519; // Red pin coordinates
-                var longitude = alert.location.longitude || 23.0021;
+                var latitude = alert.location.latitude || 36.2517; // Red pin coordinates
+                var longitude = alert.location.longitude || 22.5923;
 
                 // Add a marker for the red pin
                 var marker = L.marker([latitude, longitude], {
