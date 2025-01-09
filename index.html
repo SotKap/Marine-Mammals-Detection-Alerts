@@ -66,13 +66,14 @@
         latestAlertRef.on("value", function(snapshot) {
             var alert = snapshot.val();
             if (alert) {
-                var latitude = alert.location.latitude || 36.2517; // Red pin coordinates
+                var latitude = alert.location.latitude || 36.2517; // Default coordinates
                 var longitude = alert.location.longitude || 22.5923;
 
-                // Add a marker for the red pin
-                var marker = L.marker([latitude, longitude], {
-                    icon: redIcon
-                }).addTo(map);
+                // Determine icon based on threshold
+                var icon = alert.threshold_exceeded ? redIcon : blueIcon;
+
+                // Add or update marker
+                var marker = L.marker([latitude, longitude], { icon: icon }).addTo(map);
 
                 // Create a popup with timestamp and device info
                 var popupContent = `
@@ -82,7 +83,7 @@
                 `;
                 marker.bindPopup(popupContent).openPopup();
 
-                // Adjust map view to include the red pin
+                // Adjust map view to include the updated marker
                 map.setView([latitude, longitude], 10);
             }
         }, function(error) {
