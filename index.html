@@ -26,7 +26,7 @@
         firebase.initializeApp(firebaseConfig);
 
         // Initialize the map
-        var map = L.map('map').setView([36.2517, 22.5923], 10); // Adjusted zoom and center
+        var map = L.map('map').setView([36.2517, 22.5923], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19
         }).addTo(map);
@@ -46,48 +46,52 @@
             popupAnchor: [1, -34],
         });
 
-        // Static blue markers for Device 2, Device 3, Device 4
+        // Static markers for additional devices
         var devices = [
-            {lat: 36.3081, lon: 23.0945, name: "Device 2"},
-            {lat: 36.3994, lon: 23.2542, name: "Device 3"},
-            {lat: 36.2657, lon: 23.2512, name: "Device 4"}
+            { lat: 36.3081, lon: 23.0945, name: "Device 2" },
+            { lat: 36.3994, lon: 23.2542, name: "Device 3" },
+            { lat: 36.2657, lon: 23.2512, name: "Device 4" }
         ];
 
         devices.forEach(device => {
-            var timestamp = new Date().toISOString(); // Placeholder timestamp
+            var timestamp = new Date().toISOString(); // placeholder
             var popupContent = `Device: ${device.name}<br>Message: Static location<br>Timestamp: ${timestamp}`;
             L.marker([device.lat, device.lon], { icon: blueIcon })
                 .addTo(map)
                 .bindPopup(popupContent);
         });
 
-        // Firebase listener for the latest alert
+        // Track the live marker
+        var liveMarker = null;
+
+        // Firebase listener for latest alert
         var latestAlertRef = firebase.database().ref("latest-alert");
-        latestAlertRef.on("value", function(snapshot) {
+        latestAlertRef.on("value", function (snapshot) {
             var alert = snapshot.val();
             if (alert) {
-                var latitude = alert.location.latitude || 36.2517; // Default coordinates
-                var longitude = alert.location.longitude || 22.5923;
-
-                // Determine icon based on threshold
+                var latitude = alert.location?.latitude || 36.2517;
+                var longitude = alert.location?.longitude || 22.5923;
                 var icon = alert.threshold_exceeded ? redIcon : blueIcon;
 
-                // Add or update marker
-                var marker = L.marker([latitude, longitude], { icon: icon }).addTo(map);
+                // If marker already exists, just update its position and icon
+                if (liveMarker) {
+                    liveMarker.setLatLng([latitude, longitude]);
+                    liveMarker.setIcon(icon);
+                } else {
+                    liveMarker = L.marker([latitude, longitude], { icon: icon }).addTo(map);
+                }
 
-                // Create a popup with timestamp and device info
                 var popupContent = `
                     Device: ${alert.device_id}<br>
                     Message: ${alert.message}<br>
-                    Timestamp: ${alert.timestamp || "No timestamp available"}
+                    Timestamp: ${alert.timestamp || "No timestamp"}<br>
                     Last Mammal Timestamp: ${alert.last_mammal_timestamp || "N/A"}
                 `;
-                marker.bindPopup(popupContent).openPopup();
+                liveMarker.bindPopup(popupContent).openPopup();
 
-                // Adjust map view to include the updated marker
                 map.setView([latitude, longitude], 10);
             }
-        }, function(error) {
+        }, function (error) {
             console.error("Error fetching alert data from Firebase:", error);
         });
     </script>
