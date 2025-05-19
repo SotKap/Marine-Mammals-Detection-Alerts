@@ -80,6 +80,7 @@
                     Device: ${alert.device_id}<br>
                     Message: ${alert.message}<br>
                     Timestamp: ${alert.timestamp || "No timestamp available"}
+                    Last Mammal Timestamp: ${alert.last_mammal_timestamp || "N/A"}
                 `;
                 marker.bindPopup(popupContent).openPopup();
 
