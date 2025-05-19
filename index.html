@@ -82,7 +82,7 @@
                     liveMarker = L.marker([latitude, longitude], { icon: icon }).addTo(map);
                 }
 
-                var popupContent = var popupContent = `
+                var popupContent = `
                  Device: ${alert.device_id}<br>
                  Message: ${alert.message || "No message"}<br>
                  Confidence: ${alert.confidence || "N/A"}<br>
