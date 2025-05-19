@@ -71,7 +71,8 @@
             if (alert) {
                 var latitude = alert.location?.latitude || 36.2517;
                 var longitude = alert.location?.longitude || 22.5923;
-                var icon = alert.threshold_exceeded ? redIcon : blueIcon;
+                var isMammal = alert.predicted_class && alert.predicted_class !== "Background Noise";
+                var icon = isMammal ? redIcon : blueIcon;
 
                 // If marker already exists, just update its position and icon
                 if (liveMarker) {
@@ -81,11 +82,12 @@
                     liveMarker = L.marker([latitude, longitude], { icon: icon }).addTo(map);
                 }
 
-                var popupContent = `
-                    Device: ${alert.device_id}<br>
-                    Message: ${alert.message}<br>
-                    Timestamp: ${alert.timestamp || "No timestamp"}<br>
-                    Last Mammal Timestamp: ${alert.last_mammal_timestamp || "N/A"}
+                var popupContent = var popupContent = `
+                 Device: ${alert.device_id}<br>
+                 Message: ${alert.message || "No message"}<br>
+                 Confidence: ${alert.confidence || "N/A"}<br>
+                 Class: ${alert.predicted_class || "N/A"}<br>
+                 Timestamp: ${alert.timestamp || "No timestamp"}
                 `;
                 liveMarker.bindPopup(popupContent).openPopup();
 
