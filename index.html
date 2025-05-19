@@ -90,7 +90,6 @@
                  Timestamp: ${alert.timestamp || "No timestamp"}
                 `;
                 liveMarker.bindPopup(popupContent).openPopup();
-
                 map.setView([latitude, longitude], 10);
             }
         }, function (error) {
