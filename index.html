@@ -85,7 +85,7 @@
 
     // Firebase listener
     const alertRef = firebase.database().ref("latest-alert");
-    let currentAlertMarker = null;
+       let currentAlertMarker = null;
 
     alertRef.on("value", snapshot => {
       const alert = snapshot.val();
@@ -99,24 +99,27 @@
           Last Mammal Timestamp: ${alert.last_mammal_timestamp || "N/A"}
         `;
 
-        // Remove old marker if exists
+        // Remove existing alert marker
         if (currentAlertMarker) {
           map.removeLayer(currentAlertMarker);
         }
 
-        // Add red marker for alert
-        currentAlertMarker = L.marker([lat, lon], { icon: redIcon }).addTo(map);
+        // Add red marker if threshold exceeded, else just blue
+        const initialIcon = alert.threshold_exceeded ? redIcon : blueIcon;
+        currentAlertMarker = L.marker([lat, lon], { icon: initialIcon }).addTo(map);
         currentAlertMarker.bindPopup(popup).openPopup();
         map.setView([lat, lon], 10);
 
-        // After 3 seconds, replace with blue marker
-        setTimeout(() => {
-          if (currentAlertMarker) {
-            map.removeLayer(currentAlertMarker);
-          }
-          currentAlertMarker = L.marker([lat, lon], { icon: blueIcon }).addTo(map);
-          currentAlertMarker.bindPopup(popup);
-        }, 3000);
+        // After 3 seconds, turn red to blue (only if it was red)
+        if (alert.threshold_exceeded) {
+          setTimeout(() => {
+            if (currentAlertMarker) {
+              map.removeLayer(currentAlertMarker);
+              currentAlertMarker = L.marker([lat, lon], { icon: blueIcon }).addTo(map);
+              currentAlertMarker.bindPopup(popup);
+            }
+          }, 3000);
+        }
       }
     }, error => {
       console.error("Firebase read failed:", error);
