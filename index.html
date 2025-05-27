@@ -85,7 +85,7 @@
 
     // Firebase listener
     const alertRef = firebase.database().ref("latest-alert");
-       let currentAlertMarker = null;
+    let currentAlertMarker = null;
 
     alertRef.on("value", snapshot => {
       const alert = snapshot.val();
@@ -121,8 +121,6 @@
           }, 3000);
         }
       }
-    }, error => {
-      console.error("Firebase read failed:", error);
     });
   </script>
 </body>
